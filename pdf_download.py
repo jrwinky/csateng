@@ -1,6 +1,7 @@
 import time
 import os
 import requests
+from dotenv import load_dotenv
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -55,7 +56,6 @@ def harvest_exam_urls_all_pages(driver, button_selector):
             
         # [ ... The rest of your page turning logic remains exactly the same ... ]
         # 2. Look for the exact NEXT page number (e.g., "2", "3", "4")
-        # 2. Look for the exact NEXT page number
         next_page_number = page_number + 1
         
         try:
@@ -119,21 +119,33 @@ def batch_download_pdfs(exam_data_list, session_cookies, save_directory="./csat_
     print("🎉 All downloads complete!")
 
 if __name__ == "__main__":
+    # 🛑 SECURE VAULT INITIALIZATION
+    load_dotenv()
+    
+    # Pull keys safely from .env
+    secure_hschsp = os.getenv("EBS_HSCHSP_ID")
+    secure_oauth = os.getenv("EBS_OAUTH_TOKEN")
+    secure_pcid = os.getenv("EBS_PCID")
+
     # --- MAIN EXECUTION ---
     # Setup your webdriver (Chrome/Edge)
     driver = webdriver.Chrome() 
     
-    # 1. Establish Domain & Inject Cookies (If needed)
+    # 1. Establish Domain & Inject Cookies
     driver.get("https://www.ebsi.co.kr")
-    driver.add_cookie({'name': 'HSCHSP_ID', 'value': 'ZmE0ZTE4N2ItNTc1ZS00NDY0LTllMjctMmFlYWUyYjkyYzhi', 'domain': '.ebsi.co.kr'})
-    driver.add_cookie({'name': 'OAuth_Token_Request_State', 'value': 'f127aec1-63f6-436d-9033-6cccba3d0cc5', 'domain': '.ebsi.co.kr'})
-    driver.add_cookie({'name': 'PCID', 'value': '17787408003582236956176', 'domain': '.ebsi.co.kr'})
+    
+    # Safely inject the cookies using the hidden variables
+    if secure_hschsp:
+        driver.add_cookie({'name': 'HSCHSP_ID', 'value': secure_hschsp, 'domain': '.ebsi.co.kr'})
+    if secure_oauth:
+        driver.add_cookie({'name': 'OAuth_Token_Request_State', 'value': secure_oauth, 'domain': '.ebsi.co.kr'})
+    if secure_pcid:
+        driver.add_cookie({'name': 'PCID', 'value': secure_pcid, 'domain': '.ebsi.co.kr'})
     
     # 2. Navigate to Target Search Page
     target_url = "https://www.ebsi.co.kr/ebs/xip/xipc/previousPaperList.ebs?targetCd=D300"
     driver.get(target_url)
     
-    # [Insert your apply_exam_filters(driver) function here if you are auto-clicking checkboxes]
     input("Press Enter in the console once you have manually filtered the table and are ready to harvest...")
     
     # 3. Harvest URLs (Targeting the 'English Question' button)
@@ -142,6 +154,6 @@ if __name__ == "__main__":
     
     # 4. Close Heavy Browser & Start Silent Download
     driver.quit()
-    # Add your specific folder path as the third argument:
-    my_folder = "C:/Users/aaron/Documents/Aaron/Seoulrun/pastexams"
+    pdf_path = os.getenv("PDF_PATH")
+    my_folder = pdf_path
     batch_download_pdfs(urls_to_download, stolen_cookies, save_directory=my_folder)

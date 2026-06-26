@@ -3,6 +3,7 @@ import os
 import glob
 import math
 from collections import Counter
+from dotenv import load_dotenv
 
 # We use the same basic word filter so we are only comparing high-value words
 BASIC_WORDS_FILTER = {"make", "find", "take", "time", "year", "people", "use", "good", "way", "day"}
@@ -117,5 +118,7 @@ def run_historical_comparison(input_folder):
 
 if __name__ == "__main__":
     # Point this to your folder of 53 text files!
-    input_directory = "C:/Users/aaron/Documents/Aaron/Seoulrun/pastexamtexts" 
+    load_dotenv()
+
+    input_directory = os.getenv("ENG_PATH")
     run_historical_comparison(input_directory)

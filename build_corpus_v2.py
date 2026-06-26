@@ -3,6 +3,7 @@ import os
 import glob
 import pandas as pd
 from collections import Counter
+from dotenv import load_dotenv
 import re
 
 # Add any basic middle-school words here that you want to instantly delete
@@ -83,7 +84,9 @@ def build_advanced_csat_corpus(input_folder, output_csv, current_year=2025, deca
     print(f"🎉 Corpus successfully saved to {output_csv}!")
 
 if __name__ == "__main__":
-    input_directory = "C:/Users/aaron/Documents/Aaron/Seoulrun/pastexamsengtexts"
+    load_dotenv()
+
+    input_directory = os.getenv("ENG_PATH")
     output_database = "CSAT_Weighted_Corpus.csv"
     
     # You can easily tweak your parameters here!

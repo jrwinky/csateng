@@ -1,0 +1,12 @@
+# Secrets
+.env
+
+# Data Folders (Don't upload gigabytes of PDFs to Git)
+csat_pdfs/
+csat_text_raw/
+csat_text_english/
+
+# Python cache files
+__pycache__/
+*.pyc
+*.csv

@@ -3,6 +3,7 @@ import os
 import glob
 import pdfplumber
 import re
+from dotenv import load_dotenv
 
 def extract_and_sanitize_csat_pdf(pdf_path, raw_txt_path, english_txt_path):
     full_exam_text = ""
@@ -96,10 +97,11 @@ def batch_process_directory_fast(input_folder, raw_folder, english_folder):
     os._exit(0)
 
 if __name__ == "__main__":
-    pdf_dir = "C:/Users/aaron/Documents/Aaron/Seoulrun/pastexams"
+    load_dotenv()
+    pdf_dir = os.getenv("PDF_PATH")
     
     # The Dual-Export Folders!
-    raw_txt_dir = "C:/Users/aaron/Documents/Aaron/Seoulrun/pastexamsrawtexts"
-    english_txt_dir = "C:/Users/aaron/Documents/Aaron/Seoulrun/pastexamsengtexts"
+    raw_txt_dir = os.getenv("TXT_PATH")
+    english_txt_dir = os.getenv("ENG_PATH")
     
     batch_process_directory_fast(pdf_dir, raw_txt_dir, english_txt_dir)
