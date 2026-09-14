@@ -4,6 +4,7 @@ import glob
 import pandas as pd
 import re
 from collections import Counter
+from dotenv import load_dotenv
 
 BASIC_WORDS_FILTER = {"make", "find", "take", "time", "year", "people", "use", "good", "way", "day"}
 
@@ -76,5 +77,7 @@ def build_advanced_csat_corpus(input_folder, output_csv, current_year=2025, deca
     print(f"🎉 Corpus successfully saved to {output_csv}!")
 
 if __name__ == "__main__":
+    load_dotenv()
+    txt_dir = os.getenv("TXT_PATH")
     # POINT THIS TO THE SILVER LAYER!
-    build_advanced_csat_corpus("./csat_text_english", "CSAT_Weighted_Corpus.csv")
+    build_advanced_csat_corpus(txt_dir, "CSAT_Weighted_Corpus.csv")

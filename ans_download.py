@@ -14,25 +14,33 @@ def parse_answer_button(onclick_text):
     that EBS uses for answer keys.
     """
     # 1. The dominant format: goDownLoadJ
-    if "goDownLoadP(" in onclick_text:
+    if "goDownLoadJ(" in onclick_text:
         raw_url = onclick_text.split("'")[1]
-        url = f"http://wdown.ebsi.co.kr/W61001/01exam{raw_url}"
+        url = raw_url
         
         # Extracts from: 'https://wdown.../01exam/20260604/mobile/...'
-        date = raw_url.split('/')[1][:8] 
+        date = raw_url.split('/')[5][:8] 
         
         # Safely grabs .png or .jpg
-        ext = ".pdf"
+        ext = raw_url[-4:] 
         return url, ext, date
     
+    # 2. The older format: goDownLoadJ2
+    elif "goDownLoadJ2" in onclick_text:
+        raw_path = onclick_text.split("'")[1]
+        url = f"https://wdown.ebsi.co.kr/W61001/01exam{raw_path}"
+        date = raw_path.split('/')[1][:8] 
+        ext = ".pdf" if ".pdf" in raw_path else raw_path[-4:]
+        return url, ext, date
+        
     return None, None, None
 
-def harvest_exam_urls_all_pages(driver, button_selector):
+def harvest_answer_urls(driver):
     wait = WebDriverWait(driver, 15)
     print("Harvesting elements...")
     
     # We will now store a tuple of (date, url)
-    all_exam_data = [] 
+    all_answers_data = [] 
     # A set to keep track of dates we've already seen
     seen_dates = set() 
     page_number = 1
@@ -47,7 +55,7 @@ def harvest_exam_urls_all_pages(driver, button_selector):
 
         all_bts = driver.find_elements(By.TAG_NAME, "button")
 
-        ans_bts = [b for b in all_bts if "문제" in b.text]
+        ans_bts = [b for b in all_bts if "정답" in b.text]
     
         for btn in ans_bts:
             try:
@@ -58,7 +66,7 @@ def harvest_exam_urls_all_pages(driver, button_selector):
             
                 if a_url and exam_date and exam_date not in seen_dates:
                     seen_dates.add(exam_date)
-                    all_exam_data.append((exam_date, a_url, a_ext))
+                    all_answers_data.append((exam_date, a_url, a_ext))
                     print(f"✅ 정답지 발견: {exam_date}")
             except Exception as e:
                 continue
@@ -99,16 +107,16 @@ def harvest_exam_urls_all_pages(driver, button_selector):
     session_cookies = {cookie['name']: cookie['value'] for cookie in driver.get_cookies()}
     
     print(f"\n✅ Master Harvest Complete! Total Unique PDFs found: {len(all_answers_data)}")
-    return all_exam_data, session_cookies
+    return all_answers_data, session_cookies
 
-def batch_download_pdfs(exam_data_list, session_cookies, save_directory="./csat_pdfs"):
+def batch_download_pdfs(answer_data_list, session_cookies, save_directory):
     os.makedirs(save_directory, exist_ok=True)
     
     # We unpack the (date, url) tuple
-    for exam_date, url in exam_data_list:
+    for exam_date, url, ext in answer_data_list:
         
         # Name the file using the extracted date!
-        filename = f"{exam_date}.pdf"
+        filename = f"{exam_date}_A{ext}"
         filepath = os.path.join(save_directory, filename)
         
         print(f"Downloading {filename}...")
@@ -124,7 +132,6 @@ def batch_download_pdfs(exam_data_list, session_cookies, save_directory="./csat_
     print("🎉 All downloads complete!")
 
 if __name__ == "__main__":
-    # 🛑 SECURE VAULT INITIALIZATION
     load_dotenv()
     
     # Pull keys safely from .env
@@ -151,10 +158,9 @@ if __name__ == "__main__":
     input("Press Enter in the console once you have manually filtered the table and are ready to harvest...")
     
     # 3. Harvest URLs (Targeting the 'English Question' button)
-    button_css = "button[onclick*='eng_1_mun_'], button[onclick*='eng_mun'], button[onclick*='eng1_mun'], button[onclick*='engb_mun'], button[onclick*='engb1_mun']"
-    urls_to_download, stolen_cookies = harvest_exam_urls_all_pages(driver)
+    urls_to_download, stolen_cookies = harvest_answer_urls(driver)
     
     # 4. Close Heavy Browser & Start Silent Download
     driver.quit()
-    pdf_path = os.getenv("PDF_PATH")
+    pdf_path = os.getenv("ANS_PATH")
     batch_download_pdfs(urls_to_download, stolen_cookies, save_directory=pdf_path)

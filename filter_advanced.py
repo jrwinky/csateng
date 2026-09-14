@@ -8,7 +8,7 @@ def create_pedagogical_corpus(input_csv, output_csv):
     
     print("Downloading Pedagogical ESL/Middle-School baselines...")
     try:
-        url = "https://raw.githubusercontent.com/words/dale-chall/master/dale-chall.json"
+        url = url = "https://raw.githubusercontent.com/dwyl/english-words/master/words_alpha.txt"
         response = urllib.request.urlopen(url)
         dale_chall_words = set(json.loads(response.read().decode('utf-8')))
     except Exception as e:
